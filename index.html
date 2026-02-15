@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vzla Cash Monitor</title>
+    <style>
+        :root {
+            --bg: #121212;
+            --card: #1e1e1e;
+            --text: #ffffff;
+            --accent-green: #4caf50;
+            --accent-orange: #ff9800;
+            --accent-blue: #2196f3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 { text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
+
+        .card {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border-left: 5px solid transparent;
+        }
+
+        .bcv { border-color: var(--accent-blue); }
+        .paralelo { border-color: var(--accent-green); }
+        .usdt { border-color: var(--accent-orange); }
+
+        .card-title { font-size: 0.9rem; opacity: 0.7; margin-bottom: 5px; }
+        .price { font-size: 1.8rem; font-weight: bold; margin: 0; }
+        .update-time { font-size: 0.7rem; opacity: 0.5; margin-top: 10px; }
+
+        .calculator {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 10px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #333;
+            color: white;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .calc-result {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            display: grid;
+            gap: 8px;
+        }
+
+        .loading { text-align: center; color: var(--accent-orange); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🇻🇪 Monitor Vzla</h1>
+    
+    <div id="loading" class="loading">Actualizando precios...</div>
+
+    <div class="card bcv">
+        <div class="card-title">Dólar BCV (Oficial)</div>
+        <div class="price" id="p-bcv">0.00</div>
+        <div class="update-time" id="t-bcv">Cargando...</div>
+    </div>
+
+    <div class="card paralelo">
+        <div class="card-title">Dólar Paralelo (Promedio)</div>
+        <div class="price" id="p-para">0.00</div>
+        <div class="update-time" id="t-para">Cargando...</div>
+    </div>
+
+    <div class="card usdt">
+        <div class="card-title">USDT (Binance P2P aprox.)</div>
+        <div class="price" id="p-usdt">0.00</div>
+        <div class="update-time" id="t-usdt">Cargando...</div>
+    </div>
+
+    <div class="calculator">
+        <div class="card-title" style="margin-bottom: 10px;">Calculadora de Bolívares (VES)</div>
+        <input type="number" id="vesInput" placeholder="Introduce monto en Bs." oninput="convert()">
+        <div class="calc-result" id="results">
+            <span>A BCV: <b id="res-bcv">$0.00</b></span>
+            <span>A Paralelo: <b id="res-para">$0.00</b></span>
+            <span>A USDT: <b id="res-usdt">$0.00</b></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    let rates = { bcv: 0, para: 0, usdt: 0 };
+
+    async function fetchData() {
+        try {
+            // Usamos la API de CriptoDolar que consolida varias tasas
+            const response = await fetch('https://pydolarvenezuela-api.vercel.app/api/v1/dollar/all');
+            const data = await response.json();
+
+            // Asignación de datos (los nombres de las propiedades pueden variar según la API)
+            rates.bcv = data.monitors.bcv.price;
+            rates.para = data.monitors.enparalelovzla.price;
+            rates.usdt = data.monitors.binance.price; // O promedio calculado
+
+            document.getElementById('p-bcv').innerText = `Bs. ${rates.bcv}`;
+            document.getElementById('p-para').innerText = `Bs. ${rates.para}`;
+            document.getElementById('p-usdt').innerText = `Bs. ${rates.usdt}`;
+
+            document.getElementById('t-bcv').innerText = "Actualizado: " + data.monitors.bcv.last_update;
+            document.getElementById('t-para').innerText = "Actualizado: " + data.monitors.enparalelovzla.last_update;
+            document.getElementById('t-usdt').innerText = "Referencia Binance P2P";
+
+            document.getElementById('loading').style.display = 'none';
+        } catch (error) {
+            document.getElementById('loading').innerText = "Error al conectar con la API.";
+            console.error(error);
+        }
+    }
+
+    function convert() {
+        const ves = document.getElementById('vesInput').value;
+        if(ves > 0) {
+            document.getElementById('res-bcv').innerText = `$${(ves / rates.bcv).toFixed(2)}`;
+            document.getElementById('res-para').innerText = `$${(ves / rates.para).toFixed(2)}`;
+            document.getElementById('res-usdt').innerText = `$${(ves / rates.usdt).toFixed(2)}`;
+        } else {
+            document.getElementById('res-bcv').innerText = "$0.00";
+            document.getElementById('res-para').innerText = "$0.00";
+            document.getElementById('res-usdt').innerText = "$0.00";
+        }
+    }
+
+    fetchData();
+</script>
+
+</body>
+</html>
