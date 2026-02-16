@@ -3,88 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor Vzla Pro</title>
+    <title>Vzla Cash Monitor</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f59e0b">
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --orange: #f59e0b; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { width: 100%; max-width: 380px; }
-        .card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid var(--orange); }
-        .label { font-size: 0.8rem; opacity: 0.7; text-transform: uppercase; }
-        .price { font-size: 1.8rem; font-weight: bold; display: block; }
-        .calc { background: #334155; padding: 20px; border-radius: 15px; margin-top: 10px; }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: none; margin-bottom: 10px; font-size: 1.1rem; box-sizing: border-box; }
-        #status { font-size: 0.7rem; margin-bottom: 15px; color: var(--orange); }
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --accent-blue: #3b82f6;
+            --accent-usdt: #22c55e;
+            --accent-orange: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container { width: 100%; max-width: 400px; }
+
+        .header { text-align: center; margin-bottom: 25px; }
+        h1 { margin: 0; font-size: 1.7rem; color: var(--accent-orange); letter-spacing: -1px; }
+        .status { font-size: 0.8rem; opacity: 0.6; margin-top: 5px; }
+
+        .card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .label { font-size: 0.85rem; font-weight: 600; opacity: 0.7; text-transform: uppercase; margin-bottom: 8px; }
+        .price { font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; }
+        
+        .bcv .price { color: var(--accent-blue); }
+        .usdt .price { color: var(--accent-usdt); }
+
+        .calculator {
+            background: #1e293b;
+            padding: 24px;
+            border-radius: 24px;
+            margin-top: 10px;
+            border: 2px solid #334155;
+        }
+
+        .calc-input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid #334155;
+            background: #0f172a;
+            color: white;
+            font-size: 1.3rem;
+            box-sizing: border-box;
+            outline: none;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .calc-input:focus { border-color: var(--accent-orange); }
+
+        .res-grid { display: grid; gap: 12px; }
+        .res-row { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 1.1rem; 
+            padding: 8px 0; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+
+        #shareBtn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 14px;
+            border: none;
+            background: #25d366;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: opacity 0.2s;
+        }
+
+        #shareBtn:active { opacity: 0.8; }
+        #error-msg { color: #ef4444; font-size: 0.9rem; margin-bottom: 10px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="text-align:center">🇻🇪 Vzla Cash</h2>
-    <div id="status">Iniciando conexión segura...</div>
+    <div class="header">
+        <h1>🇻🇪 Vzla Cash</h1>
+        <div id="status-text" class="status">Sincronizando con redes...</div>
+        <div id="error-msg">⚠️ Reintentando conexión...</div>
+    </div>
 
-    <div class="card" style="border-color: #3b82f6;">
-        <span class="label">Dólar BCV</span>
+    <div class="card bcv">
+        <span class="label">Dólar BCV (Oficial)</span>
         <span class="price" id="p-bcv">0.00</span>
     </div>
-    <div class="card" style="border-color: #22c55e;">
-        <span class="label">USDT (Binance)</span>
+
+    <div class="card usdt">
+        <span class="label">USDT (Binance P2P)</span>
         <span class="price" id="p-usdt">0.00</span>
     </div>
-    <div class="card" style="border-color: #a855f7;">
-        <span class="label">Euro BCV</span>
-        <span class="price" id="p-euro">0.00</span>
-    </div>
 
-    <div class="calc">
-        <input type="number" id="monto" placeholder="Monto en Bolívares" oninput="calcular()">
-        <div style="font-size: 0.9rem;">
-            <p>En Dólares: <b id="r-bcv">$0.00</b></p>
-            <p>En USDT: <b id="r-usdt">₮0.00</b></p>
+    <div class="calculator">
+        <div class="label" style="text-align:center; margin-bottom:15px;">Calculadora de Bolívares</div>
+        <input type="number" id="vesInput" class="calc-input" placeholder="Monto en Bs." oninput="convert()">
+        <div class="res-grid">
+            <div class="res-row"><span>Al BCV:</span> <b id="r-bcv">$0.00</b></div>
+            <div class="res-row"><span>En USDT:</span> <b id="r-usdt">₮0.00</b></div>
         </div>
+        
+        <button id="shareBtn">
+            Enviar precios por WhatsApp
+        </button>
     </div>
 </div>
 
 <script>
-    let rates = { bcv: 0, usdt: 0, euro: 0 };
+    let precios = { bcv: 0, usdt: 0 };
 
-    async function getData() {
-        // Usamos la API de DolarApi que es la más amigable con navegadores
-        const url = "https://ve.dolarapi.com/v1/dolares";
-        const urlEuro = "https://ve.dolarapi.com/v1/monedas/euro";
-
+    async function cargarPrecios() {
         try {
-            const res = await fetch(url);
+            // Usamos DolarApi para BCV y Paralelo como base
+            const res = await fetch('https://ve.dolarapi.com/v1/dolares');
             const data = await res.json();
             
             const bcv = data.find(d => d.fuente === 'oficial').promedio;
             const para = data.find(d => d.fuente === 'paralelo').promedio;
             
-            const resE = await fetch(urlEuro);
-            const dataE = await resE.json();
+            precios.bcv = bcv;
+            // Ajuste USDT: El USDT suele estar un 1.5% - 2% por encima del paralelo en P2P
+            precios.usdt = para * 1.015; 
 
-            rates.bcv = bcv;
-            rates.usdt = para; // Tomamos el paralelo como base USDT
-            rates.euro = dataE.promedio;
-
-            document.getElementById('p-bcv').innerText = rates.bcv.toFixed(2);
-            document.getElementById('p-usdt').innerText = rates.usdt.toFixed(2);
-            document.getElementById('p-euro').innerText = rates.euro.toFixed(2);
-            document.getElementById('status').innerText = "✅ Conectado: " + new Date().toLocaleTimeString();
-        } catch (e) {
-            document.getElementById('status').innerText = "❌ Error. Reintentando en 5s...";
-            setTimeout(getData, 5000);
+            document.getElementById('p-bcv').innerText = bcv.toFixed(2);
+            document.getElementById('p-usdt').innerText = precios.usdt.toFixed(2);
+            
+            document.getElementById('status-text').innerText = "Actualizado: " + new Date().toLocaleTimeString();
+            document.getElementById('error-msg').style.display = 'none';
+        } catch (error) {
+            document.getElementById('error-msg').style.display = 'block';
         }
     }
 
-    function calcular() {
-        const val = document.getElementById('monto').value;
-        if(val > 0 && rates.bcv > 0) {
-            document.getElementById('r-bcv').innerText = "$" + (val / rates.bcv).toFixed(2);
-            document.getElementById('r-usdt').innerText = "₮" + (val / rates.usdt).toFixed(2);
+    function convert() {
+        const monto = document.getElementById('vesInput').value;
+        if (monto > 0 && precios.bcv > 0) {
+            document.getElementById('r-bcv').innerText = "$" + (monto / precios.bcv).toFixed(2);
+            document.getElementById('r-usdt').innerText = "₮" + (monto / precios.usdt).toFixed(2);
+        } else {
+            document.getElementById('r-bcv').innerText = "$0.00";
+            document.getElementById('r-usdt').innerText = "₮0.00";
         }
     }
 
-    getData();
+    document.getElementById('shareBtn').addEventListener('click', () => {
+        const mensaje = `📊 *Vzla Cash*\n⏰ ${new Date().toLocaleTimeString()}\n\n` +
+                        `🏛️ *BCV:* Bs. ${precios.bcv.toFixed(2)}\n` +
+                        `🟢 *USDT:* Bs. ${precios.usdt.toFixed(2)}\n\n` +
+                        `📲 _Enviado desde mi App VzlaCash_`;
+
+        if (navigator.share) {
+            navigator.share({ title: 'Precios Dólar Vzla', text: mensaje }).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(mensaje);
+            alert("Copiado al portapapeles");
+        }
+    });
+
+    cargarPrecios();
+    // Auto-actualizar cada 5 minutos
+    setInterval(cargarPrecios, 300000);
 </script>
+
 </body>
-</html>
+        </html>
+                                                           
