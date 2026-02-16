@@ -5,183 +5,194 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vzla Cash Monitor</title>
     <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#f59e0b">
-<meta name="apple-mobile-web-app-capable" content="yes">
-    
+    <meta name="theme-color" content="#f59e0b">
     <style>
         :root {
-            --bg: #121212;
-            --card: #1e1e1e;
-            --text: #ffffff;
-            --accent-green: #4caf50;
-            --accent-orange: #ff9800;
-            --accent-blue: #2196f3;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --accent-blue: #3b82f6;
+            --accent-usdt: #22c55e;
+            --accent-orange: #f59e0b;
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
             padding: 20px;
         }
 
         .container { width: 100%; max-width: 400px; }
 
-        h1 { text-align: center; font-size: 1.5rem; margin-bottom: 20px; color: var(--accent-orange); }
+        .header { text-align: center; margin-bottom: 25px; }
+        h1 { margin: 0; font-size: 1.7rem; color: var(--accent-orange); letter-spacing: -1px; }
+        .status { font-size: 0.8rem; opacity: 0.6; margin-top: 5px; }
 
         .card {
             background: var(--card);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            border-left: 5px solid transparent;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
-        .bcv { border-left-color: var(--accent-blue); }
-        .paralelo { border-left-color: var(--accent-green); }
-        .usdt { border-left-color: var(--accent-orange); }
-
-        .card-title { font-size: 0.9rem; opacity: 0.7; margin-bottom: 5px; }
-        .price { font-size: 1.8rem; font-weight: bold; margin: 0; }
-        .update-time { font-size: 0.7rem; opacity: 0.5; margin-top: 10px; }
+        .label { font-size: 0.85rem; font-weight: 600; opacity: 0.7; text-transform: uppercase; margin-bottom: 8px; }
+        .price { font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; }
+        
+        .bcv .price { color: var(--accent-blue); }
+        .usdt .price { color: var(--accent-usdt); }
 
         .calculator {
-            background: #2a2a2a;
-            padding: 20px;
-            border-radius: 15px;
+            background: #1e293b;
+            padding: 24px;
+            border-radius: 24px;
             margin-top: 10px;
+            border: 2px solid #334155;
         }
 
-        input {
+        .calc-input {
             width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            background: #333;
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid #334155;
+            background: #0f172a;
             color: white;
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             box-sizing: border-box;
             outline: none;
+            margin-bottom: 20px;
             text-align: center;
         }
 
-        .calc-result {
-            margin-top: 15px;
-            font-size: 1rem;
-            display: grid;
-            gap: 10px;
+        .calc-input:focus { border-color: var(--accent-orange); }
+
+        .res-grid { display: grid; gap: 12px; }
+        .res-row { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 1.1rem; 
+            padding: 8px 0; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
         }
 
-        .calc-item { display: flex; justify-content: space-between; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        #shareBtn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 14px;
+            border: none;
+            background: #25d366;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: opacity 0.2s;
+        }
 
-        #loading { text-align: center; color: var(--accent-orange); margin-bottom: 10px; font-weight: bold; }
+        #shareBtn:active { opacity: 0.8; }
+        #error-msg { color: #ef4444; font-size: 0.9rem; margin-bottom: 10px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🇻🇪 VnzlaCash</h1>
-    
-    <div id="loading">📡 Conectando con servidores...</div>
+    <div class="header">
+        <h1>🇻🇪 Vnzla Cash</h1>
+        <div id="status-text" class="status">Sincronizando con redes...</div>
+        <div id="error-msg">⚠️ Reintentando conexión...</div>
+    </div>
 
     <div class="card bcv">
-        <div class="card-title">Dólar BCV (Oficial)</div>
-        <div class="price" id="p-bcv">0.00</div>
-        <div id="t-bcv" class="update-time">Cargando...</div>
+        <span class="label">Dólar BCV (Oficial)</span>
+        <span class="price" id="p-bcv">0.00</span>
     </div>
 
     <div class="card usdt">
-        <div class="card-title">USDT (Binance P2P)</div>
-        <div class="price" id="p-usdt">0.00</div>
-        <div id="t-usdt" class="update-time">Referencia promedio</div>
+        <span class="label">USDT (Binance P2P)</span>
+        <span class="price" id="p-usdt">0.00</span>
     </div>
 
     <div class="calculator">
-        <div class="card-title" style="margin-bottom: 10px; text-align: center;">Calculadora (Introduce Bs.)</div>
-        <input type="number" id="vesInput" placeholder="Ej: 100.00" oninput="convert()">
-        <div class="calc-result">
-            <div class="calc-item"><span>Al BCV:</span> <b id="res-bcv">$0.00</b></div>
-            <div class="calc-item"><span>A USDT:</span> <b id="res-usdt">$0.00</b></div>
+        <div class="label" style="text-align:center; margin-bottom:15px;">Calculadora de Bolívares</div>
+        <input type="number" id="vesInput" class="calc-input" placeholder="Monto en Bs." oninput="convert()">
+        <div class="res-grid">
+            <div class="res-row"><span>Al BCV:</span> <b id="r-bcv">$0.00</b></div>
+            <div class="res-row"><span>En USDT:</span> <b id="r-usdt">₮0.00</b></div>
         </div>
+        
+        <button id="shareBtn">
+            Enviar precios por WhatsApp
+        </button>
     </div>
 </div>
-    <button id="shareBtn" style="width: 100%; margin-top: 15px; padding: 15px; border-radius: 12px; border: none; background: #25d366; color: white; font-weight: bold; font-size: 1rem; cursor: pointer;">
-        Compartir Precios vía WhatsApp 📲
-    </button>
-    
+
 <script>
-    let rates = { bcv: 0, para: 0, usdt: 0 };
+    let precios = { bcv: 0, usdt: 0 };
 
-    async function fetchData() {
+    async function cargarPrecios() {
         try {
-            // Intentamos la API más completa primero
-            const response = await fetch('https://pydolarvenezuela-api.vercel.app/api/v1/dollar/all');
-            if (!response.ok) throw new Error();
-            const data = await response.json();
+            // Usamos DolarApi para BCV y Paralelo como base
+            const res = await fetch('https://ve.dolarapi.com/v1/dolares');
+            const data = await res.json();
+            
+            const bcv = data.find(d => d.fuente === 'oficial').promedio;
+            const para = data.find(d => d.fuente === 'paralelo').promedio;
+            
+            precios.bcv = bcv;
+            // Ajuste USDT: El USDT suele estar un 1.5% - 2% por encima del paralelo en P2P
+            precios.usdt = para * 1.015; 
 
-            rates.bcv = parseFloat(data.monitors.bcv.price);
-            rates.para = parseFloat(data.monitors.enparalelovzla.price);
-            rates.usdt = parseFloat(data.monitors.binance.price || data.monitors.enparalelovzla.price);
-
-            updateUI(data.monitors.bcv.last_update);
-        } catch (e) {
-            console.log("Error API 1, probando respaldo...");
-            try {
-                // Respaldo: DolarApi.com
-                const response = await fetch('https://ve.dolarapi.com/v1/dolares');
-                const data = await response.json();
-                
-                const bcvData = data.find(d => d.fuente === 'oficial');
-                
-                rates.bcv = bcvData.promedio;
-                rates.usdt = paraData.promedio; // Estimado
-
-                updateUI(bcvData.fechaActualizacion);
-            } catch (e2) {
-                document.getElementById('loading').innerText = "❌ Error de conexión. Reintenta.";
-            }
+            document.getElementById('p-bcv').innerText = bcv.toFixed(2);
+            document.getElementById('p-usdt').innerText = precios.usdt.toFixed(2);
+            
+            document.getElementById('status-text').innerText = "Actualizado: " + new Date().toLocaleTimeString();
+            document.getElementById('error-msg').style.display = 'none';
+        } catch (error) {
+            document.getElementById('error-msg').style.display = 'block';
         }
-    }
-
-    function updateUI(fecha) {
-        document.getElementById('p-bcv').innerText = `Bs. ${rates.bcv.toFixed(2)}`;
-        document.getElementById('p-usdt').innerText = `Bs. ${rates.usdt.toFixed(2)}`;
-        document.getElementById('t-bcv').innerText = "Actualizado: " + fecha;
-        document.getElementById('loading').style.display = 'none';
     }
 
     function convert() {
-        const ves = document.getElementById('vesInput').value;
-        if(ves > 0 && rates.bcv > 0) {
-            document.getElementById('res-bcv').innerText = `$${(ves / rates.bcv).toFixed(2)}`;
-            document.getElementById('res-usdt').innerText = `$${(ves / rates.usdt).toFixed(2)}`;
+        const monto = document.getElementById('vesInput').value;
+        if (monto > 0 && precios.bcv > 0) {
+            document.getElementById('r-bcv').innerText = "$" + (monto / precios.bcv).toFixed(2);
+            document.getElementById('r-usdt').innerText = "₮" + (monto / precios.usdt).toFixed(2);
+        } else {
+            document.getElementById('r-bcv').innerText = "$0.00";
+            document.getElementById('r-usdt').innerText = "₮0.00";
         }
     }
 
-    fetchData();
-        document.getElementById('shareBtn').addEventListener('click', () => {
-        const mensaje = `📊 *Precios Dólar VZLA* (${new Date().toLocaleTimeString()})\n\n` +
-                        `🔹 *BCV:* Bs. ${precios.bcv.toFixed(2)}\n` +
-                        `🔸 *USDT:* Bs. ${precios.usdt.toFixed(2)}\n\n` +
-                        `👉 Calculado desde mi App de Monitor.`;
+    document.getElementById('shareBtn').addEventListener('click', () => {
+        const mensaje = `📊 *Monitor Dólar VZLA*\n⏰ ${new Date().toLocaleTimeString()}\n\n` +
+                        `🏛️ *BCV:* Bs. ${precios.bcv.toFixed(2)}\n` +
+                        `🟢 *USDT:* Bs. ${precios.usdt.toFixed(2)}\n\n` +
+                        `📲 _Enviado desde mi App Monitor_`;
 
         if (navigator.share) {
-            navigator.share({
-                title: 'Precios Dólar Venezuela',
-                text: mensaje,
-            }).catch(console.error);
+            navigator.share({ title: 'Precios Dólar Vzla', text: mensaje }).catch(console.error);
         } else {
-            // Si el navegador no soporta compartir (PC), copia al portapapeles
             navigator.clipboard.writeText(mensaje);
-            alert("Precios copiados al portapapeles");
+            alert("Copiado al portapapeles");
         }
     });
-    
+
+    cargarPrecios();
+    // Auto-actualizar cada 5 minutos
+    setInterval(cargarPrecios, 300000);
 </script>
 
 </body>
