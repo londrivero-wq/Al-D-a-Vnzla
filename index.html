@@ -3,143 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vzla Cash Monitor</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#f59e0b">
+    <title>Monitor Vzla Pro</title>
     <style>
-        :root {
-            --bg: #0f172a; --card: #1e293b; --text: #f8fafc;
-            --accent-blue: #3b82f6; --accent-usdt: #22c55e;
-            --accent-euro: #a855f7; --accent-orange: #f59e0b;
-        }
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background-color: var(--bg); color: var(--text);
-            margin: 0; display: flex; flex-direction: column;
-            align-items: center; min-height: 100vh; padding: 20px;
-        }
-        .container { width: 100%; max-width: 400px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        h1 { margin: 0; font-size: 1.7rem; color: var(--accent-orange); }
-        .status { font-size: 0.8rem; opacity: 0.6; margin-top: 5px; }
-        .card {
-            background: var(--card); border-radius: 20px; padding: 20px;
-            margin-bottom: 12px; display: flex; flex-direction: column;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .label { font-size: 0.75rem; font-weight: 600; opacity: 0.7; text-transform: uppercase; }
-        .price { font-size: 1.9rem; font-weight: 800; }
-        .bcv .price { color: var(--accent-blue); }
-        .usdt .price { color: var(--accent-usdt); }
-        .euro .price { color: var(--accent-euro); }
-        .calculator {
-            background: #1e293b; padding: 20px; border-radius: 24px;
-            margin-top: 10px; border: 2px solid #334155;
-        }
-        .calc-input {
-            width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #334155;
-            background: #0f172a; color: white; font-size: 1.2rem; box-sizing: border-box;
-            outline: none; margin-bottom: 15px; text-align: center;
-        }
-        .res-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        #shareBtn {
-            width: 100%; margin-top: 15px; padding: 14px; border-radius: 12px;
-            border: none; background: #25d366; color: white; font-weight: 700; cursor: pointer;
-        }
-        #error-msg { color: #f87171; font-size: 0.8rem; text-align: center; display: none; margin-top: 10px; }
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --orange: #f59e0b; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { width: 100%; max-width: 380px; }
+        .card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid var(--orange); }
+        .label { font-size: 0.8rem; opacity: 0.7; text-transform: uppercase; }
+        .price { font-size: 1.8rem; font-weight: bold; display: block; }
+        .calc { background: #334155; padding: 20px; border-radius: 15px; margin-top: 10px; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: none; margin-bottom: 10px; font-size: 1.1rem; box-sizing: border-box; }
+        #status { font-size: 0.7rem; margin-bottom: 15px; color: var(--orange); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h1>🇻🇪 Vzla Cash </h1>
-        <div id="status-text" class="status">Buscando conexión segura...</div>
-        <div id="error-msg">⚠️ No se pudo conectar. Reintentando...</div>
+    <h2 style="text-align:center">🇻🇪 Vzla Cash</h2>
+    <div id="status">Iniciando conexión segura...</div>
+
+    <div class="card" style="border-color: #3b82f6;">
+        <span class="label">Dólar BCV</span>
+        <span class="price" id="p-bcv">0.00</span>
+    </div>
+    <div class="card" style="border-color: #22c55e;">
+        <span class="label">USDT (Binance)</span>
+        <span class="price" id="p-usdt">0.00</span>
+    </div>
+    <div class="card" style="border-color: #a855f7;">
+        <span class="label">Euro BCV</span>
+        <span class="price" id="p-euro">0.00</span>
     </div>
 
-    <div class="card bcv"><span class="label">Dólar BCV</span><span class="price" id="p-bcv">---</span></div>
-    <div class="card usdt"><span class="label">USDT (Binance)</span><span class="price" id="p-usdt">---</span></div>
-    <div class="card euro"><span class="label">Euro BCV</span><span class="price" id="p-euro">---</span></div>
-
-    <div class="calculator">
-        <input type="number" id="vesInput" class="calc-input" placeholder="Monto en Bs." oninput="convert()">
-        <div class="res-row"><span>En Dólares:</span> <b id="r-bcv">$0.00</b></div>
-        <div class="res-row"><span>En USDT:</span> <b id="r-usdt">₮0.00</b></div>
-        <div class="res-row"><span>En Euros:</span> <b id="r-euro">€0.00</b></div>
-        <button id="shareBtn">Compartir Precios</button>
+    <div class="calc">
+        <input type="number" id="monto" placeholder="Monto en Bolívares" oninput="calcular()">
+        <div style="font-size: 0.9rem;">
+            <p>En Dólares: <b id="r-bcv">$0.00</b></p>
+            <p>En USDT: <b id="r-usdt">₮0.00</b></p>
+        </div>
     </div>
 </div>
 
 <script>
-    let precios = { bcv: 0, usdt: 0, euro: 0 };
+    let rates = { bcv: 0, usdt: 0, euro: 0 };
 
-    async function cargarPrecios() {
-        // RUTA 1: DolarApi (Suele ser la mejor)
+    async function getData() {
+        // Usamos la API de DolarApi que es la más amigable con navegadores
+        const url = "https://ve.dolarapi.com/v1/dolares";
+        const urlEuro = "https://ve.dolarapi.com/v1/monedas/euro";
+
         try {
-            const res = await fetch('https://ve.dolarapi.com/v1/dolares');
+            const res = await fetch(url);
             const data = await res.json();
+            
             const bcv = data.find(d => d.fuente === 'oficial').promedio;
             const para = data.find(d => d.fuente === 'paralelo').promedio;
             
-            const resEur = await fetch('https://ve.dolarapi.com/v1/monedas/euro');
-            const dataEur = await resEur.json();
+            const resE = await fetch(urlEuro);
+            const dataE = await resE.json();
 
-            precios.bcv = bcv;
-            precios.usdt = para * 1.015;
-            precios.euro = dataEur.promedio;
-            return actualizarUI("Servidor 1");
-        } catch (e) { console.log("Ruta 1 falló"); }
+            rates.bcv = bcv;
+            rates.usdt = para; // Tomamos el paralelo como base USDT
+            rates.euro = dataE.promedio;
 
-        // RUTA 2: PyDolar (Alternativa potente)
-        try {
-            const res = await fetch('https://pydolarvenezuela-api.vercel.app/api/v1/dollar/all');
-            const data = await res.json();
-            precios.bcv = parseFloat(data.monitors.bcv.price);
-            precios.usdt = parseFloat(data.monitors.binance.price || data.monitors.enparalelovzla.price);
-            precios.euro = parseFloat(data.monitors.euro.price || (precios.bcv * 1.08));
-            return actualizarUI("Servidor 2");
-        } catch (e) { console.log("Ruta 2 falló"); }
-
-        document.getElementById('error-msg').style.display = 'block';
-    }
-
-    function actualizarUI(servidor) {
-        document.getElementById('p-bcv').innerText = precios.bcv.toFixed(2);
-        document.getElementById('p-usdt').innerText = precios.usdt.toFixed(2);
-        document.getElementById('p-euro').innerText = precios.euro.toFixed(2);
-        document.getElementById('status-text').innerText = `Vía ${servidor} • ${new Date().toLocaleTimeString()}`;
-        document.getElementById('error-msg').style.display = 'none';
-        convert();
-    }
-
-    function convert() {
-        const m = document.getElementById('vesInput').value;
-        if (m > 0 && precios.bcv > 0) {
-            document.getElementById('r-bcv').innerText = "$" + (m / precios.bcv).toFixed(2);
-            document.getElementById('r-usdt').innerText = "₮" + (m / precios.usdt).toFixed(2);
-            document.getElementById('r-euro').innerText = "€" + (m / precios.euro).toFixed(2);
+            document.getElementById('p-bcv').innerText = rates.bcv.toFixed(2);
+            document.getElementById('p-usdt').innerText = rates.usdt.toFixed(2);
+            document.getElementById('p-euro').innerText = rates.euro.toFixed(2);
+            document.getElementById('status').innerText = "✅ Conectado: " + new Date().toLocaleTimeString();
+        } catch (e) {
+            document.getElementById('status').innerText = "❌ Error. Reintentando en 5s...";
+            setTimeout(getData, 5000);
         }
     }
 
-    document.getElementById('shareBtn').addEventListener('click', () => {
-        const mensaje = `📊 *Vzla Cash* (${new Date().toLocaleTimeString()})\n\n` +
-                        `🔹 *BCV:* Bs. ${precios.bcv.toFixed(2)}\n` +
-                        `🟢 *USDT:* Bs. ${precios.usdt.toFixed(2)}\n` +
-                        `🇪🇺 *EURO:* Bs. ${precios.euro.toFixed(2)}\n\n` +
-                        `📲 _Enviado desde mi App Vzla Cash_`;
-
-        if (navigator.share) {
-            navigator.share({ title: 'Precios Dólar/Euro Vzla', text: mensaje }).catch(console.error);
-        } else {
-            navigator.clipboard.writeText(mensaje);
-            alert("Precios copiados al portapapeles");
+    function calcular() {
+        const val = document.getElementById('monto').value;
+        if(val > 0 && rates.bcv > 0) {
+            document.getElementById('r-bcv').innerText = "$" + (val / rates.bcv).toFixed(2);
+            document.getElementById('r-usdt').innerText = "₮" + (val / rates.usdt).toFixed(2);
         }
-    });
+    }
 
-    cargarPrecios();
-    setInterval(cargarPrecios, 300000); // Actualiza cada 5 min
+    getData();
 </script>
-
 </body>
 </html>
