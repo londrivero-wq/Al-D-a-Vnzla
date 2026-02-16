@@ -1,0 +1,16 @@
+{
+  "short_name": "VzlaCash",
+  "name": "Monitor Dólar Venezuela",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2311/2311745.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#0f172a",
+  "display": "standalone",
+  "scope": "./",
+  "theme_color": "#f59e0b"
+}
