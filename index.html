@@ -85,7 +85,7 @@
 <body>
 
 <div class="container">
-    <h1>🇻🇪 Monitor Vzla</h1>
+    <h1>🇻🇪 VnzlaCash</h1>
     
     <div id="loading">📡 Conectando con servidores...</div>
 
@@ -93,12 +93,6 @@
         <div class="card-title">Dólar BCV (Oficial)</div>
         <div class="price" id="p-bcv">0.00</div>
         <div id="t-bcv" class="update-time">Cargando...</div>
-    </div>
-
-    <div class="card paralelo">
-        <div class="card-title">Dólar Paralelo</div>
-        <div class="price" id="p-para">0.00</div>
-        <div id="t-para" class="update-time">Cargando...</div>
     </div>
 
     <div class="card usdt">
@@ -159,7 +153,6 @@
 
     function updateUI(fecha) {
         document.getElementById('p-bcv').innerText = `Bs. ${rates.bcv.toFixed(2)}`;
-        document.getElementById('p-para').innerText = `Bs. ${rates.para.toFixed(2)}`;
         document.getElementById('p-usdt').innerText = `Bs. ${rates.usdt.toFixed(2)}`;
         document.getElementById('t-bcv').innerText = "Actualizado: " + fecha;
         document.getElementById('t-para').innerText = "Sincronizado";
@@ -170,7 +163,6 @@
         const ves = document.getElementById('vesInput').value;
         if(ves > 0 && rates.bcv > 0) {
             document.getElementById('res-bcv').innerText = `$${(ves / rates.bcv).toFixed(2)}`;
-            document.getElementById('res-para').innerText = `$${(ves / rates.para).toFixed(2)}`;
             document.getElementById('res-usdt').innerText = `$${(ves / rates.usdt).toFixed(2)}`;
         }
     }
@@ -179,7 +171,6 @@
         document.getElementById('shareBtn').addEventListener('click', () => {
         const mensaje = `📊 *Precios Dólar VZLA* (${new Date().toLocaleTimeString()})\n\n` +
                         `🔹 *BCV:* Bs. ${precios.bcv.toFixed(2)}\n` +
-                        `🔹 *Paralelo:* Bs. ${precios.para.toFixed(2)}\n` +
                         `🔸 *USDT:* Bs. ${precios.usdt.toFixed(2)}\n\n` +
                         `👉 Calculado desde mi App de Monitor.`;
 
