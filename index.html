@@ -117,7 +117,10 @@
         </div>
     </div>
 </div>
-
+    <button id="shareBtn" style="width: 100%; margin-top: 15px; padding: 15px; border-radius: 12px; border: none; background: #25d366; color: white; font-weight: bold; font-size: 1rem; cursor: pointer;">
+        Compartir Precios vía WhatsApp 📲
+    </button>
+    
 <script>
     let rates = { bcv: 0, para: 0, usdt: 0 };
 
@@ -173,6 +176,25 @@
     }
 
     fetchData();
+        document.getElementById('shareBtn').addEventListener('click', () => {
+        const mensaje = `📊 *Precios Dólar VZLA* (${new Date().toLocaleTimeString()})\n\n` +
+                        `🔹 *BCV:* Bs. ${precios.bcv.toFixed(2)}\n` +
+                        `🔹 *Paralelo:* Bs. ${precios.para.toFixed(2)}\n` +
+                        `🔸 *USDT:* Bs. ${precios.usdt.toFixed(2)}\n\n` +
+                        `👉 Calculado desde mi App de Monitor.`;
+
+        if (navigator.share) {
+            navigator.share({
+                title: 'Precios Dólar Venezuela',
+                text: mensaje,
+            }).catch(console.error);
+        } else {
+            // Si el navegador no soporta compartir (PC), copia al portapapeles
+            navigator.clipboard.writeText(mensaje);
+            alert("Precios copiados al portapapeles");
+        }
+    });
+    
 </script>
 
 </body>
