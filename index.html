@@ -288,19 +288,16 @@ let preciosPrevios = { bcv: null, eur: null, usdt: null };
 
 async function cargarPrecios() {
     try {
-        const resDol = await fetch('https://ve.dolarapi.com/v1/dolares');
-        const dataDol = await resDol.json();
+        const res = await fetch("https://api.exchangerate.host/latest?base=USD&symbols=VES,EUR");
+        const data = await res.json();
 
-        const bcv = dataDol.find(d => d.fuente === 'oficial').promedio;
-        const paralelo = dataDol.find(d => d.fuente === 'paralelo').promedio;
+        const dolar = data.rates.VES;
+        const euro = data.rates.EUR * dolar; // Convertimos EUR a VES
+        const usdt = dolar; // USDT ≈ USD
 
-        const resEur = await fetch('https://ve.dolarapi.com/v1/euros');
-        const dataEur = await resEur.json();
-        const euroBCV = dataEur.find(d => d.fuente === 'oficial').promedio;
-
-        actualizarPrecio('bcv', bcv);
-        actualizarPrecio('usdt', paralelo * 1.015);
-        actualizarPrecio('eur', euroBCV);
+        actualizarPrecio('bcv', dolar);
+        actualizarPrecio('eur', euro);
+        actualizarPrecio('usdt', usdt * 1.01);
 
         document.getElementById('status-text').innerText =
             "Actualizado: " + new Date().toLocaleTimeString();
@@ -399,4 +396,4 @@ if ('serviceWorker' in navigator) {
 </script>
 
 </body>
-  </html>
+                </html>
