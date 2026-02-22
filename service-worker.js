@@ -1,48 +1,25 @@
-const CACHE_NAME = "vzla-cash-monitor-v1";
-
-const urlsToCache = [
-  "/",
-  "/index.html",
-  "/manifest.json"
-];
-
-// INSTALACIÓN
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache);
-      })
-  );
-});
-
-// ACTIVACIÓN
-self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
-  );
-});
-
-// FETCH
-self.addEventListener("fetch", event => {
-
-  // ❌ No cachear APIs externas (Binance etc)
-  if (event.request.url.includes("api.binance.com")) {
-    return;
-  }
-
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        return response || fetch(event.request);
-      })
-  );
-});
+{
+  "name": "Vzla Cash Monitor",
+  "short_name": "VzlaCash",
+  "description": "Monitor en tiempo real del dólar BCV, euro y USDT en Venezuela.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#f59e0b",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
